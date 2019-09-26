@@ -3,41 +3,44 @@ import './App.css';
 import TodoList from "./TodoList";
 import AddNewItemForm from "./AddNewItemForm";
 import {connect} from "react-redux";
+import {ADD_TASK, ADD_TODOLIST, addTodoListAC, DELETE_TODOLIST} from "./reducer";
 
 class App extends React.Component {
 
     nextTodoListId = 0;
 
-    state = {
-        todolists: []
-    }
+    // state = {
+    //     todolists: []
+    // }
 
     addTodoList = (title) => {
-
+debugger
         let newTodoList = {
             id: this.nextTodoListId,
-            title: title
+            title: title,
+            tasks:[]
         }
 
         this.props.addTodoList(newTodoList);
-
         this.nextTodoListId++;
-
-
     }
 
-    componentDidMount() {
+    deleteTodoList = () => {
+        console.log('TodoList deleted');
+    }
+
+    /*componentDidMount() {
         this.restoreState();
-    }
+    }*/
 
-    saveState = () => {
+    /*saveState = () => {
         // переводим объект в строку
         let stateAsString = JSON.stringify(this.state);
         // сохраняем нашу строку в localStorage под ключом "our-state"
         localStorage.setItem("todolists-state", stateAsString);
-    }
+    }*/
 
-    restoreState = () => {
+    /*restoreState = () => {
         // объявляем наш стейт стартовый
         let state = this.state;
         // считываем сохранённую ранее строку из localStorage
@@ -55,20 +58,19 @@ class App extends React.Component {
                 }
             })
         });
-    }
+    }*/
 
     render = () => {
         const todolists = this.props
             .todolists
-            .map(tl => <TodoList id={tl.id} title={tl.title}/>)
+            .map(tl => <TodoList key={tl.id} id={tl.id} title={tl.title} tasks={tl.tasks}/>)
 
         return (
             <>
                 <div>
-                   <AddNewItemForm
-                       addItem={this.addTodoList}
-
-                   />
+                    <AddNewItemForm
+                        addItem={this.addTodoList}
+                    />
                 </div>
                 <div className="App">
                     {todolists}
@@ -77,20 +79,17 @@ class App extends React.Component {
         );
     }
 }
-const mapStateToProps =(state)=>{
+
+const mapStateToProps = (state) => {
     return {
         todolists: state.todolists
     }
 }
 
-const mapDispatchToProps = (dispatch) =>{
+const mapDispatchToProps = (dispatch) => {
     return {
-        addTodoList: (newTodoList) =>{
-            const action ={
-                type: 'ADD-TODOLIST',
-                newTodoList: newTodoList
-            }
-            dispatch(action)
+        addTodoList: (newTodoList) => {
+            dispatch(addTodoListAC(newTodoList))
         }
     }
 }

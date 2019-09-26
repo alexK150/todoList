@@ -4,50 +4,15 @@ import TodoListTasks from "./TodoListTasks";
 import TodoListFooter from "./TodoListFooter";
 import TodoListTitle from "./TodoListTitle";
 import AddNewItemForm from "./AddNewItemForm";
+import {connect} from "react-redux";
+import {deleteTodolistAC} from "./reducer";
+
 
 class TodoList extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.newTasksTitileRef = React.createRef();
-
-    }
-
-    componentDidMount() {
-        this.restoreState();
-    }
-
-    saveState = () => {
-        // переводим объект в строку
-        let stateAsString = JSON.stringify(this.state);
-        // сохраняем нашу строку в localStorage под ключом "our-state"
-        localStorage.setItem("our-state-" + this.props.id, stateAsString);
-    }
-
-    restoreState = () => {
-        // объявляем наш стейт стартовый
-        let state = this.state;
-        // считываем сохранённую ранее строку из localStorage
-        let stateAsString = localStorage.getItem("our-state-" + this.props.id);
-        // а вдруг ещё не было ни одного сохранения?? тогда будет null.
-        // если не null, тогда превращаем строку в объект
-        if (stateAsString !== null) {
-            state = JSON.parse(stateAsString);
-        }
-        // устанавливаем стейт (либо пустой, либо восстановленный) в стейт
-        this.setState(state, () => {
-            this.state.tasks.forEach(t => {
-                if (t.id >= this.nextTaskId) {
-                    this.nextTaskId = t.id + 1;
-                }
-            })
-        });
-    }
 
     nextTaskId = 0;
 
     state = {
-        tasks: [],
         filterValue: "All"
     };
 
@@ -58,19 +23,16 @@ class TodoList extends React.Component {
             isDone: false,
             priority: "low"
         };
-        // инкрементим (увеличим) id следующей таски, чтобы при следюущем добавлении, он был на 1 больше
-        this.nextTaskId++;
-        let newTasks = [...this.state.tasks, newTask];
-        this.setState( {
-            tasks: newTasks
-        }, () => { this.saveState(); });
 
+        this.nextTaskId++;
     }
 
     changeFilter = (newFilterValue) => {
         this.setState( {
             filterValue: newFilterValue
-        }, () => { this.saveState(); });
+        },
+            // () => { this.saveState(); }
+            );
     }
 
     changeTask = (taskId, obj) => {
@@ -83,10 +45,6 @@ class TodoList extends React.Component {
                 return {...t, ...obj};
             }
         });
-
-        this.setState({
-            tasks: newTasks
-        }, () => { this.saveState(); });
     }
     changeStatus = (taskId, isDone) => {
         this.changeTask(taskId, {isDone: isDone});
@@ -94,6 +52,10 @@ class TodoList extends React.Component {
     changeTitle = (taskId, title) => {
         this.changeTask(taskId, {title: title});
     }
+
+    onDeleteTodoList = ()=>{
+        this.props.deleteTodolist(this.props.id);
+    };
 
     render = () => {
 
@@ -107,7 +69,7 @@ class TodoList extends React.Component {
 
                     <TodoListTasks changeStatus={this.changeStatus }
                                    changeTitle={this.changeTitle }
-                                   tasks={this.state.tasks.filter(t => {
+                                   tasks={this.props.tasks.filter(t => {
                         if (this.state.filterValue === "All") {
                             return true;
                         }
@@ -119,11 +81,29 @@ class TodoList extends React.Component {
                         }
                     })}/>
                     <TodoListFooter changeFilter={this.changeFilter} filterValue={this.state.filterValue} />
+                    <button onClick={this.onDeleteTodoList}>Delete</button>
                 </div>
 
         );
     }
 }
 
-export default TodoList;
+const mapStateToProps = (state => {
+    return {}
+});
+
+const mapDispatchToProps = (dispatch)=> {
+    return {
+        deleteTodolist: (todolistId)=> {
+            dispatch(deleteTodolistAC(todolistId))
+        }
+    }
+};
+
+
+
+
+
+const connectTodoList =  connect(mapStateToProps, mapDispatchToProps)(TodoList);
+export default connectTodoList;
 
